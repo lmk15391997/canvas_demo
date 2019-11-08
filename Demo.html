@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<!-- 本效果使用canvas实现，适配移动端-->
+<head>
+    <meta charset="UTF-8">
+    <title>林铭康-实践题</title>
+    <meta name="viewport"
+        content="width=device-width,height=device-height,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+</head>
+<style>
+    #box {
+        width: 300px;
+        margin:0 auto;
+    }
+
+    #textbox {
+        text-align: center;
+    }
+</style>
+
+<body>
+    <div id="box">
+        <canvas id="canvas" width="300" height="300"></canvas><br>
+        <div id="textbox">
+            <input id="text" type="text" placeholder="请输入，默认750" value=750 onkeypress="getKey()">
+            <input id="button" type="button" value="开始" onclick="fn()">
+        </div>
+        <h2>本效果使用canvas实现,可修改数值，下限350，上限950</h2>
+
+    </div>
+    <script>
+        function toCanvas(id, progress) {
+            //清除计时器
+            clearInterval(circleLoading)
+            //判断边界条件
+            progress = progress < 350 ? 350 : progress;
+            progress = progress > 950 ? 950 : progress;
+
+            var canvas = document.getElementById(id),
+                ctx = canvas.getContext("2d"),
+                percent = (progress - 350) / 6, //最终百分比
+                circleX = canvas.width / 2, //中心x坐标
+                circleY = canvas.height / 2, //中心y坐标
+                radius = 100, //圆环半径
+                lineWidth = 5, //圆形线条的宽度
+                fontSize = 30; //字体大小
+            //圆点
+            function smallcircle2(cx, cy, r) {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                ctx.fillStyle = '#fff';
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            //画圆
+            function circle(cx, cy, r) {
+                ctx.beginPath();
+                ctx.lineWidth = lineWidth;
+                ctx.strokeStyle = 'rgb(255,209,189)';
+                ctx.arc(cx, cy, r, Math.PI * 2 / 3, Math.PI * 1 / 3);
+                ctx.stroke();
+            }
+
+            // 画弧线
+            function sector(cx, cy, r, startAngle, endAngle, anti) {
+                ctx.beginPath();
+
+                ctx.lineWidth = lineWidth;
+                //圆弧颜色
+                ctx.strokeStyle = 'rgb(253,92,14)';
+
+                //圆弧两端的样式
+                ctx.lineCap = 'round';
+
+                //圆弧
+                ctx.arc(
+                    cx, cy, r,
+                    (Math.PI * 2 / 3),
+                    (Math.PI * 2 / 3) + endAngle / 100 * (Math.PI * 5 / 3),
+                );
+                ctx.stroke();
+            }
+
+            //刷新
+            function loading() {
+                //控制结束时动画的速度
+                var progressNow = 350;    //设置初始值
+                process += 1;           //  进度条每次+1
+                progressNow = (process * 6 + 350) > progress ? progress : (process * 6 + 350);   //判断结束值
+
+                if (process >= percent) {
+                    clearInterval(circleLoading);
+                }
+
+                //清除canvas内容
+                ctx.clearRect(0, 0, circleX * 2, circleY * 2);
+
+                //中间的数字
+                ctx.font = fontSize + 'px April';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'rgb(253,92,14)';
+                ctx.fillText(parseInt(progressNow), circleX, circleY);
+
+                // 圆形
+                circle(circleX, circleY, radius);
+
+                //圆弧
+                sector(circleX, circleY, radius, Math.PI * 2 / 3, process);
+                //圆点
+                smallcircle2(150 + Math.cos(2 * Math.PI / 360 * (120 + process * 3)) * 100, 150 + Math.sin(2 * Math.PI / 360 * (120 + process * 3)) * 100, 2);
+
+            }
+
+            var process = 0.0; //进度从0开始
+            var circleLoading = window.setInterval(function () {
+                loading();
+            }, 1000 / percent);//控制在1s执行结束
+        }
+
+        toCanvas('canvas', 750); //默认750
+
+        function fn() {
+            var textNum = document.getElementById('text').value;
+            //输入判断
+            if (parseInt(textNum).toString() == "NaN") {
+                alert("请输入数字！")
+                return;
+            }
+            toCanvas('canvas', parseInt(textNum) || 750)
+        }
+        //回车
+        function getKey() {
+            if (event.keyCode == 13) {
+                fn();
+            }
+        }
+
+    </script>
+</body>
+
+</html>
